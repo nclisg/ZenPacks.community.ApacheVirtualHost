@@ -1,1 +1,18 @@
 name: ZenPacks.community.ApacheVirtualHost
+
+classes:
+  VirtualHost:
+    base: [zenpacklib.Component]
+    label: Virtual Host
+    monitoring_templates: [HttpMonitorVirtualHost]
+    properties:
+      ip:
+        label: IP
+      port:
+        label: Port
+      protocol:
+        label: Protocol
+
+class_relationships:
+  - Products.ZenModel.Device.Device 1:MC VirtualHost
+ 
