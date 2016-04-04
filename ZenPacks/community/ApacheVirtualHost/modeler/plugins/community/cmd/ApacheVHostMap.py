@@ -1,4 +1,5 @@
 from Products.DataCollector.plugins.CollectorPlugin import CommandPlugin
+import re
 
 class ApacheVHostMap(CommandPlugin):
     relname = 'virtualHosts'
@@ -13,25 +14,61 @@ class ApacheVHostMap(CommandPlugin):
         data = results.splitlines()
 
         defaults = False
+   
+        nameip = ""
+        nameport = ""
 
         for line in data:
-            if line.startswith('VirtualHost configuration'):
+            hostname = ""
+            port = ""
+            type = ""
+
+            if "Syntax error" in line:
+                log.error('Syntax error from apachectl, check config and if user has sufficient permissions')
+                
+                break;
+
+            if "VirtualHost configuration" in line:
                 continue
 
-            if line.startswith('wildcard NameVirtualHosts'):
-                defaults = True
+            if line.startswith("Syntax"):
                 continue
 
-            if line.startswith('Syntax'):
-                continue 
+            if "is a NameVirtualHost" in line:
+                elems = line.split()
+                nameip = elems[0].split(':')[0]
+                nameport = elems[0].split(':')[1]
+                continue
 
-            elems = line.split()
-            ip = elems[0].split(':')[0]
-            port = elems[0].split(':')[1]
-            hostname = elems[1]
+            if line.startswith("wildcard NameVirtualHosts"):
+                continue
+
+            if line.startswith("wildcard"):
+                continue
+
+            if "namevhost" in line:
+                elems = line.split()
+                hostname = elems[3]
+                port = elems[1]
+                type = "Name Based"
+                ip = nameip
+            elif line.startswith("default server"):
+                elems = line.split()
+                hostname = elems[2]
+                port = nameport
+                type = "Name Based"
+                ip = nameip
+            else:
+                elems = line.split()
+                hostname = elems[1]
+                ip = elems[0].split(':')[0]
+                port = elems[0].split(':')[1]
+                type = "IP Based"
+                
+
             protocol = 'http'
             if port == '443':
-              protocol = 'https'
+                protocol = 'https'
 
             rm.append(self.objectMap({
                 'id': self.prepId(hostname),
@@ -39,6 +76,7 @@ class ApacheVHostMap(CommandPlugin):
                 'ip': ip,
                 'port': port,
                 'protocol': protocol,
+                'type':type,
                 }))
 
         return rm

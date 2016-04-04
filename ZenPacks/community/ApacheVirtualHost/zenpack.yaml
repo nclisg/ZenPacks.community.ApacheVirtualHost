@@ -12,6 +12,8 @@ classes:
         label: Port
       protocol:
         label: Protocol
+      type:
+        label: Type
 
 class_relationships:
   - Products.ZenModel.Device.Device 1:MC VirtualHost
