@@ -1,5 +1,4 @@
 from Products.DataCollector.plugins.CollectorPlugin import CommandPlugin
-import re
 
 class ApacheVHostMap(CommandPlugin):
     relname = 'virtualHosts'
@@ -9,12 +8,10 @@ class ApacheVHostMap(CommandPlugin):
     def process(self, device, results, log):
         log.info('Collecting Apache Virtual Host information for device %s' % device.id)
 
-        rm = self.relMap()
+        relmap = self.relMap()
 
         data = results.splitlines()
 
-        defaults = False
- 
         nameip = ""
         nameport = ""
 
@@ -74,7 +71,7 @@ class ApacheVHostMap(CommandPlugin):
             if port == '*':
                 port = '80'
 
-            rm.append(self.objectMap({
+            relmap.append(self.objectMap({
                 'id': self.prepId(hostname),
                 'title': hostname,
                 'ip': ip,
@@ -83,4 +80,4 @@ class ApacheVHostMap(CommandPlugin):
                 'type':hosttype,
                 }))
 
-        return rm
+        return relmap
