@@ -5,7 +5,7 @@ class ApacheVHostMap(CommandPlugin):
     relname = 'virtualHosts'
     command = "/usr/sbin/apachectl -S 2>&1"
     modname = 'ZenPacks.community.ApacheVirtualHost.VirtualHost'
-    
+ 
     def process(self, device, results, log):
         log.info('Collecting Apache Virtual Host information for device %s' % device.id)
 
@@ -14,19 +14,18 @@ class ApacheVHostMap(CommandPlugin):
         data = results.splitlines()
 
         defaults = False
-   
+ 
         nameip = ""
         nameport = ""
 
         for line in data:
             hostname = ""
             port = ""
-            type = ""
+            hosttype = ""
 
             if "Syntax error" in line:
                 log.error('Syntax error from apachectl, check config and if user has sufficient permissions')
-                
-                break;
+                break
 
             if "VirtualHost configuration" in line:
                 continue
@@ -50,25 +49,30 @@ class ApacheVHostMap(CommandPlugin):
                 elems = line.split()
                 hostname = elems[3]
                 port = elems[1]
-                type = "Name Based"
+                hosttype = "Name Based"
                 ip = nameip
             elif line.startswith("default server"):
                 elems = line.split()
                 hostname = elems[2]
                 port = nameport
-                type = "Name Based"
+                hosttype = "Name Based"
                 ip = nameip
+            elif line.startswith("ServerRoot"):
+                break
             else:
                 elems = line.split()
                 hostname = elems[1]
                 ip = elems[0].split(':')[0]
                 port = elems[0].split(':')[1]
-                type = "IP Based"
+                hosttype = "IP Based"
                 
 
             protocol = 'http'
             if port == '443':
                 protocol = 'https'
+
+            if port == '*':
+                port = '80'
 
             rm.append(self.objectMap({
                 'id': self.prepId(hostname),
@@ -76,7 +80,7 @@ class ApacheVHostMap(CommandPlugin):
                 'ip': ip,
                 'port': port,
                 'protocol': protocol,
-                'type':type,
+                'type':hosttype,
                 }))
 
         return rm
