@@ -62,7 +62,7 @@ class ApacheVHostMap(CommandPlugin):
                 hostname = elems[1]
                 ipaddr = elems[0].split(':')[0]
                 port = elems[0].split(':')[1]
-                hosttype = "IP Based" 
+                hosttype = "IP Based"
 
             protocol = 'http'
             if port == '443':
