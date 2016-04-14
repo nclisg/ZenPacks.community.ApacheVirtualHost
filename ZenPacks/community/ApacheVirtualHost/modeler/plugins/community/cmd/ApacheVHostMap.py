@@ -4,7 +4,7 @@ class ApacheVHostMap(CommandPlugin):
     relname = 'virtualHosts'
     command = "/usr/sbin/apachectl -S 2>&1"
     modname = 'ZenPacks.community.ApacheVirtualHost.VirtualHost'
- 
+
     def process(self, device, results, log):
         log.info('Collecting Apache Virtual Host information for device %s' % device.id)
 
@@ -19,6 +19,7 @@ class ApacheVHostMap(CommandPlugin):
             hostname = ""
             port = ""
             hosttype = ""
+            ipaddr = ""
 
             if "Syntax error" in line:
                 log.error('Syntax error from apachectl, check config and if user has sufficient permissions')
@@ -47,22 +48,21 @@ class ApacheVHostMap(CommandPlugin):
                 hostname = elems[3]
                 port = elems[1]
                 hosttype = "Name Based"
-                ip = nameip
+                ipaddr = nameip
             elif line.startswith("default server"):
                 elems = line.split()
                 hostname = elems[2]
                 port = nameport
                 hosttype = "Name Based"
-                ip = nameip
+                ipaddr = nameip
             elif line.startswith("ServerRoot"):
                 break
             else:
                 elems = line.split()
                 hostname = elems[1]
-                ip = elems[0].split(':')[0]
+                ipaddr = elems[0].split(':')[0]
                 port = elems[0].split(':')[1]
-                hosttype = "IP Based"
-                
+                hosttype = "IP Based" 
 
             protocol = 'http'
             if port == '443':
@@ -74,7 +74,7 @@ class ApacheVHostMap(CommandPlugin):
             relmap.append(self.objectMap({
                 'id': self.prepId(hostname),
                 'title': hostname,
-                'ip': ip,
+                'ip': ipaddr,
                 'port': port,
                 'protocol': protocol,
                 'type':hosttype,
