@@ -28,8 +28,18 @@ class ApacheVHostMap(CommandPlugin):
             if "VirtualHost configuration" in line:
                 continue
 
+            if '[warn]' in line:
+                continue
+
+            if 'alias' in line:
+                continue
+
+            if 'Could not reliably deetermine' in line:
+                continue
+
             if line.startswith("Syntax"):
                 continue
+
 
             if "is a NameVirtualHost" in line:
                 elems = line.split()
