@@ -14,6 +14,8 @@ classes:
         label: Protocol
       type:
         label: Type
+      default:
+        label: Default
 
 class_relationships:
   - Products.ZenModel.Device.Device 1:MC VirtualHost

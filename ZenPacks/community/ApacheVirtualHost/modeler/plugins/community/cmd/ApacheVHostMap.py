@@ -20,6 +20,7 @@ class ApacheVHostMap(CommandPlugin):
             port = ""
             hosttype = ""
             ipaddr = ""
+            default = ""
 
             if "Syntax error" in line:
                 log.error('Syntax error from apachectl, check config and if user has sufficient permissions')
@@ -34,7 +35,10 @@ class ApacheVHostMap(CommandPlugin):
             if 'alias' in line:
                 continue
 
-            if 'Could not reliably deetermine' in line:
+            if 'ServerName' in line:
+                continue
+
+            if line.startswith("Warning:"):
                 continue
 
             if line.startswith("Syntax"):
@@ -59,12 +63,13 @@ class ApacheVHostMap(CommandPlugin):
                 port = elems[1]
                 hosttype = "Name Based"
                 ipaddr = nameip
-            elif line.startswith("default server"):
+            elif "default server" in line:
                 elems = line.split()
                 hostname = elems[2]
                 port = nameport
                 hosttype = "Name Based"
                 ipaddr = nameip
+                default = "Yes"
             elif line.startswith("ServerRoot"):
                 break
             else:
@@ -81,6 +86,9 @@ class ApacheVHostMap(CommandPlugin):
             if port == '*':
                 port = '80'
 
+            if ipaddr == "_default_":
+                default = "Yes"
+
             relmap.append(self.objectMap({
                 'id': self.prepId(hostname),
                 'title': hostname,
@@ -88,6 +96,7 @@ class ApacheVHostMap(CommandPlugin):
                 'port': port,
                 'protocol': protocol,
                 'type':hosttype,
+                'default':default,
                 }))
 
         return relmap
